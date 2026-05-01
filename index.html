@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🌟 成語冒險王國</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+/* ===== CSS 變數與重設 ===== */
+:root {
+  --coral:   #FF6B6B;
+  --yellow:  #FFD93D;
+  --teal:    #4ECDC4;
+  --blue:    #4D96FF;
+  --purple:  #C77DFF;
+  --orange:  #FF9A3C;
+  --pink:    #FF6BB5;
+  --green:   #6BCB77;
+  --dark:    #2D2D2D;
+  --light:   #FFFEF7;
+  --shadow:  0 8px 32px rgba(0,0,0,0.18);
+  --card-r:  24px;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size: 18px; }
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #f093fb 50%, #4facfe 100%);
+  background-size: 400% 400%;
+  animation: bgAnim 12s ease infinite;
+  overflow-x: hidden;
+  position: relative;
+}
+@keyframes bgAnim {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 漂浮星星背景 */
+.star-bg { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.star { position:absolute; font-size:1.5rem; opacity:0.15; animation: floatStar linear infinite; }
+@keyframes floatStar {
+  from { transform: translateY(110vh) rotate(0deg); opacity:0; }
+  10%  { opacity:0.2; }
+  90%  { opacity:0.2; }
+  to   { transform: translateY(-10vh) rotate(720deg); opacity:0; }
+}
+
+/* ===== 共用 ===== */
+.screen { display:none; min-height:100vh; padding:16px 12px 24px; animation: fadeUp 0.5s ease; position:relative; z-index:1; }
+.screen.active { display:flex; flex-direction:column; align-items:center; }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(30px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.card {
+  background: rgba(255,255,255,0.95);
+  border-radius: var(--card-r);
+  box-shadow: var(--shadow);
+  padding: 28px 24px;
+  width: 100%; max-width: 560px;
+}
+
+.btn {
+  display: inline-flex; align-items:center; justify-content:center; gap:8px;
+  border: none; border-radius: 60px; cursor: pointer;
+  font-family: 'Noto Sans TC', sans-serif; font-weight: 700;
+  font-size: 1.1rem; padding: 14px 32px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-decoration: none; outline: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+.btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+.btn:active { transform: scale(0.97); }
+.btn-coral  { background: linear-gradient(135deg,#FF6B6B,#FF9A3C); color:#fff; }
+.btn-blue   { background: linear-gradient(135deg,#4D96FF,#00D2FF); color:#fff; }
+.btn-teal   { background: linear-gradient(135deg,#4ECDC4,#6BCB77); color:#fff; }
+.btn-purple { background: linear-gradient(135deg,#C77DFF,#FF6BB5); color:#fff; }
+.btn-yellow { background: linear-gradient(135deg,#FFD93D,#FF9A3C); color:#fff; }
+.btn-sm { font-size:0.9rem; padding:10px 22px; }
+
+h1 { font-family: 'Fredoka One', 'Noto Sans TC', cursive; }
+
+.mascot { font-size: 4rem; animation: bounce 2s ease-in-out infinite; display:inline-block; }
+@keyframes bounce {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+
+.badge {
+  display: inline-block; border-radius: 50px; padding: 4px 14px;
+  font-size: 0.8rem; font-weight: 700; color: #fff;
+}
+
+/* ===== Screen 1: 登入 ===== */
+#screen-login { justify-content:center; gap:20px; }
+.login-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2.6rem;
+  color: #fff;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  text-align: center;
+  line-height: 1.2;
+}
+.login-subtitle { color:rgba(255,255,255,0.9); font-size:1rem; text-align:center; margin-top:-8px; }
+
+.input-group { display:flex; flex-direction:column; gap:8px; }
+.input-label { font-size:0.95rem; font-weight:700; color:var(--dark); display:flex; align-items:center; gap:6px; }
+.input-field {
+  border: 3px solid #e0e0e0; border-radius: 14px; padding: 14px 18px;
+  font-size: 1.1rem; font-family: 'Noto Sans TC', sans-serif;
+  outline: none; transition: border-color 0.2s;
+  background: #fff; color: var(--dark);
+}
+.input-field:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(77,150,255,0.15); }
+
+.config-section {
+  background: rgba(255,255,255,0.85);
+  border-radius: 16px; padding: 16px; margin-top: 8px;
+  border: 2px dashed rgba(77,150,255,0.4);
+  width:100%; max-width:560px;
+}
+.config-title { font-size:0.85rem; font-weight:700; color:#888; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.config-input {
+  border: 2px solid #e0e0e0; border-radius: 10px; padding: 8px 12px;
+  font-size:0.85rem; width:100%; color:#555; background:#fff;
+  font-family: monospace; margin-top:6px;
+}
+.toggle-config { background:none; border:none; cursor:pointer; color:rgba(255,255,255,0.8); font-size:0.85rem; text-decoration:underline; }
+
+.tips-row { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+.tip-chip {
+  background:rgba(255,255,255,0.25); color:#fff;
+  border-radius:30px; padding:6px 16px; font-size:0.82rem; font-weight:700;
+  backdrop-filter: blur(4px); border:1px solid rgba(255,255,255,0.3);
+}
+
+/* ===== Screen 2: 記憶學習 ===== */
+#screen-learn { gap:16px; padding-top: 24px; }
+
+.progress-bar-wrap {
+  width:100%; max-width:560px;
+  background: rgba(255,255,255,0.3); border-radius:30px;
+  height: 16px; overflow:hidden;
+}
+.progress-bar-fill {
+  height:100%; border-radius:30px;
+  background: linear-gradient(90deg, #FFD93D, #FF6B6B);
+  transition: width 0.5s ease;
+}
+.progress-label { color:#fff; font-weight:700; font-size:0.9rem; text-shadow:0 1px 4px rgba(0,0,0,0.2); }
+
+/* 翻轉卡片 */
+.flip-card { width:100%; max-width:560px; height:460px; perspective:1200px; cursor:pointer; }
+.flip-inner {
+  width:100%; height:100%; position:relative;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.4,0.2,0.2,1);
+}
+.flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+.flip-face {
+  position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  border-radius: var(--card-r); box-shadow: var(--shadow);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding: 28px 24px; text-align:center;
+}
+.flip-front { background: linear-gradient(135deg,#fff 0%,#fff8ee 100%); }
+.flip-back  { background: linear-gradient(135deg,#f0f9ff 0%,#e8fff0 100%); transform: rotateY(180deg); }
+
+.idiom-big {
+  font-size: 4rem; font-weight:900; color:var(--dark);
+  letter-spacing: 0.15em;
+  background: linear-gradient(135deg,var(--coral),var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  line-height: 1.1; margin-bottom: 12px;
+}
+.phonetic {
+  font-size: 1rem; color: #888; letter-spacing:0.2em; margin-bottom:16px;
+  background: rgba(77,150,255,0.1); border-radius:8px; padding:6px 16px;
+}
+.flip-hint { font-size:0.85rem; color:#aaa; margin-top:12px; }
+
+.meaning-box {
+  background: rgba(255,217,61,0.15); border-radius:14px;
+  border-left: 5px solid var(--yellow); padding:14px 16px;
+  text-align:left; width:100%; margin-bottom:12px;
+}
+.meaning-label { font-size:0.8rem; font-weight:700; color:var(--orange); margin-bottom:4px; }
+.meaning-text { font-size:1rem; color:var(--dark); line-height:1.7; }
+
+.memory-box {
+  background: rgba(199,125,255,0.1); border-radius:14px;
+  border-left: 5px solid var(--purple); padding:14px 16px;
+  text-align:left; width:100%; margin-bottom:10px;
+}
+.memory-label { font-size:0.8rem; font-weight:700; color:var(--purple); margin-bottom:4px; }
+.memory-text { font-size:0.92rem; color:#444; line-height:1.7; }
+.memory-loading { color:#aaa; font-style:italic; font-size:0.9rem; }
+
+.emoji-art { font-size: 2.2rem; margin-bottom:10px; letter-spacing:4px; }
+
+.tts-btn {
+  background: linear-gradient(135deg,var(--blue),var(--teal));
+  color:#fff; border:none; border-radius:50px; padding:10px 22px;
+  font-size:1rem; cursor:pointer; font-weight:700;
+  display:flex; align-items:center; gap:6px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 12px rgba(77,150,255,0.3);
+}
+.tts-btn:hover { transform:scale(1.05); }
+.tts-btn.playing { background: linear-gradient(135deg,var(--orange),var(--coral)); }
+
+.card-nav { display:flex; gap:12px; width:100%; max-width:560px; justify-content:center; align-items:center; }
+.card-dots { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+.dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.4); transition:all 0.3s; }
+.dot.active { background:#fff; transform:scale(1.4); }
+.dot.done { background:var(--green); }
+
+.learn-counter { color:#fff; font-weight:700; font-size:1rem; }
+
+/* ===== Screen 3: 測驗 ===== */
+#screen-quiz { gap:14px; padding-top:20px; }
+
+.quiz-header { width:100%; max-width:560px; }
+.quiz-meta { display:flex; justify-content:space-between; align-items:center; color:#fff; font-weight:700; }
+
+.timer-wrap { display:flex; align-items:center; gap:8px; }
+.timer-display {
+  font-size:1.4rem; font-weight:900;
+  background: rgba(255,255,255,0.2); border-radius:12px;
+  padding:4px 14px; color:#fff; font-family:'Fredoka One',cursive;
+  min-width:70px; text-align:center;
+}
+.timer-display.warn { animation: timerWarn 0.5s ease infinite alternate; }
+@keyframes timerWarn {
+  from { background:rgba(255,100,100,0.3); }
+  to   { background:rgba(255,100,100,0.7); }
+}
+
+.question-card { width:100%; max-width:560px; }
+.question-type-badge {
+  display:inline-block; border-radius:30px; padding:5px 16px;
+  font-size:0.8rem; font-weight:700; color:#fff; margin-bottom:14px;
+}
+.question-text { font-size:1.15rem; color:var(--dark); line-height:1.7; margin-bottom:6px; }
+.question-idiom {
+  font-size: 3rem; font-weight:900; color:var(--dark); text-align:center;
+  padding: 20px 0; letter-spacing:0.15em;
+  background: linear-gradient(135deg,var(--blue),var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip:text;
+}
+.question-meaning {
+  font-size:1.05rem; color:#444; text-align:center; line-height:1.8;
+  padding: 16px; background: rgba(255,217,61,0.1); border-radius:14px;
+  border: 2px solid rgba(255,217,61,0.3); margin-bottom:6px;
+}
+
+.options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.option-btn {
+  background:#fff; border:3px solid #e0e0e0; border-radius:16px;
+  padding:16px 12px; cursor:pointer; font-size:1rem; font-weight:700;
+  color:var(--dark); transition:all 0.2s; text-align:center;
+  font-family:'Noto Sans TC',sans-serif; line-height:1.5;
+  min-height:70px; display:flex; align-items:center; justify-content:center;
+}
+.option-btn:hover { border-color:var(--blue); background:#f0f7ff; transform:scale(1.02); }
+.option-btn.correct { border-color:var(--green); background:rgba(107,203,119,0.2); color:#2d8a3e; animation: correctPulse 0.5s ease; }
+.option-btn.wrong   { border-color:var(--coral); background:rgba(255,107,107,0.15); color:#c0392b; animation: shake 0.4s ease; }
+.option-btn.disabled { cursor:not-allowed; opacity:0.7; }
+
+@keyframes correctPulse {
+  0%,100% { transform:scale(1); }
+  50%      { transform:scale(1.05); }
+}
+@keyframes shake {
+  0%,100% { transform:translateX(0); }
+  20%,60% { transform:translateX(-6px); }
+  40%,80% { transform:translateX(6px); }
+}
+
+/* 填空題 */
+.fill-grid { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.fill-option {
+  width:72px; height:72px; border:3px solid #e0e0e0; border-radius:16px;
+  font-size:1.8rem; font-weight:900; cursor:pointer; background:#fff;
+  display:flex; align-items:center; justify-content:center; color:var(--dark);
+  transition:all 0.2s; font-family:'Noto Sans TC',sans-serif;
+}
+.fill-option:hover { border-color:var(--purple); background:#f5f0ff; transform:scale(1.08); }
+.fill-option.correct { border-color:var(--green); background:rgba(107,203,119,0.2); }
+.fill-option.wrong   { border-color:var(--coral); background:rgba(255,107,107,0.15); }
+
+.idiom-blanked {
+  font-size:2.5rem; font-weight:900; text-align:center; letter-spacing:0.2em;
+  color:var(--dark); margin:16px 0;
+}
+.blank-char {
+  display:inline-block; width:2.5rem; height:2.8rem; line-height:2.8rem;
+  border-bottom:5px solid var(--purple); text-align:center; margin:0 2px;
+  animation: blinkBlank 1s ease-in-out infinite alternate;
+}
+@keyframes blinkBlank { from { border-color:var(--purple); } to { border-color:var(--pink); } }
+
+/* 答題反饋 */
+.feedback-overlay {
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  z-index:100; pointer-events:none;
+  animation: feedbackAnim 0.1s ease;
+}
+.feedback-msg {
+  font-size:5rem; animation: feedbackPop 0.6s ease forwards;
+}
+@keyframes feedbackPop {
+  0%   { transform:scale(0) rotate(-15deg); opacity:0; }
+  60%  { transform:scale(1.3) rotate(5deg); opacity:1; }
+  100% { transform:scale(1) rotate(0deg); opacity:1; }
+}
+
+/* ===== Screen 4: 成績 ===== */
+#screen-results { gap:20px; padding-top:30px; }
+.result-title {
+  font-family:'Fredoka One',cursive; font-size:2.4rem; color:#fff;
+  text-shadow:0 4px 16px rgba(0,0,0,0.3); text-align:center;
+}
+.score-circle {
+  width:160px; height:160px; border-radius:50%;
+  background: linear-gradient(135deg,#FFD93D,#FF6B6B);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  box-shadow: 0 8px 32px rgba(255,107,107,0.4);
+  animation: scorePop 0.8s cubic-bezier(0.34,1.56,0.64,1);
+  margin: 0 auto;
+}
+@keyframes scorePop {
+  from { transform:scale(0); }
+  to   { transform:scale(1); }
+}
+.score-number { font-family:'Fredoka One',cursive; font-size:3.2rem; color:#fff; line-height:1; }
+.score-total  { font-size:0.95rem; color:rgba(255,255,255,0.85); }
+
+.stars-row { display:flex; gap:8px; justify-content:center; font-size:2.5rem; }
+.star-icon { animation: starPop 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+.star-icon:nth-child(1) { animation-delay:0.3s; }
+.star-icon:nth-child(2) { animation-delay:0.6s; }
+.star-icon:nth-child(3) { animation-delay:0.9s; }
+@keyframes starPop { from{transform:scale(0);opacity:0;} to{transform:scale(1);opacity:1;} }
+
+.result-stats {
+  display:grid; grid-template-columns:1fr 1fr; gap:12px;
+  width:100%; max-width:560px;
+}
+.stat-item {
+  background:rgba(255,255,255,0.9); border-radius:16px;
+  padding:16px; text-align:center;
+}
+.stat-value { font-size:1.8rem; font-weight:900; color:var(--dark); }
+.stat-label { font-size:0.8rem; color:#888; font-weight:700; margin-top:2px; }
+
+.wrong-list { width:100%; max-width:560px; }
+.wrong-title { color:#fff; font-weight:700; margin-bottom:10px; font-size:1rem; }
+.wrong-item {
+  background:rgba(255,255,255,0.9); border-radius:12px; padding:12px 16px;
+  margin-bottom:8px; display:flex; align-items:center; gap:10px;
+}
+.wrong-idiom { font-size:1.3rem; font-weight:900; color:var(--coral); min-width:80px; }
+.wrong-meaning { font-size:0.85rem; color:#555; line-height:1.5; }
+
+.result-actions { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+
+/* 彩帶 */
+.confetti { position:fixed; inset:0; pointer-events:none; z-index:50; overflow:hidden; }
+.confetti-piece {
+  position:absolute; top:-20px;
+  width:12px; height:20px; border-radius:3px;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  to { transform: translateY(110vh) rotate(720deg); opacity:0; }
+}
+
+/* ===== 通知 Toast ===== */
+.toast {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  background:rgba(30,30,30,0.9); color:#fff; border-radius:12px;
+  padding:12px 24px; font-size:0.95rem; font-weight:700;
+  z-index:200; pointer-events:none; opacity:0;
+  transition: opacity 0.3s;
+  backdrop-filter:blur(8px);
+}
+.toast.show { opacity:1; }
+
+/* ===== 響應式 ===== */
+@media (max-width: 400px) {
+  .idiom-big { font-size:3rem; }
+  .options-grid { grid-template-columns:1fr; }
+  .question-idiom { font-size:2.4rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- 漂浮星星 -->
+<div class="star-bg" id="starBg"></div>
+
+<!-- Toast 通知 -->
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================ -->
+<!-- Screen 1: 登入                                               -->
+<!-- ============================================================ -->
+<div id="screen-login" class="screen active">
+  <div class="mascot">🏆</div>
+  <div class="login-title">成語冒險王國</div>
+  <div class="login-subtitle">🌟 超強記憶法・讓成語輕鬆住進你的腦袋！</div>
+
+  <div class="card" style="margin-top:8px;">
+    <div class="input-group">
+      <label class="input-label">👤 你的名字</label>
+      <input class="input-field" id="inputName" type="text" placeholder="請輸入姓名" maxlength="20">
+    </div>
+    <div class="input-group" style="margin-top:14px;">
+      <label class="input-label">🏫 班級</label>
+      <input class="input-field" id="inputClass" type="text" placeholder="例如：五年三班" maxlength="20">
+    </div>
+    <div style="margin-top:20px; text-align:center;">
+      <button class="btn btn-coral" onclick="startGame()" style="width:100%; font-size:1.25rem; padding:18px;">
+        🚀 開始冒險！
+      </button>
+    </div>
+  </div>
+
+  <div class="tips-row" style="margin-top:12px;">
+    <span class="tip-chip">🧠 超強記憶法</span>
+    <span class="tip-chip">🎵 語音朗讀</span>
+    <span class="tip-chip">🎮 互動測驗</span>
+    <span class="tip-chip">🏅 成績記錄</span>
+  </div>
+
+  <!-- 設定區 (折疊) -->
+  <button class="toggle-config" onclick="toggleConfig()" style="margin-top:14px;">
+    ⚙️ 進階設定（老師用）
+  </button>
+  <div class="config-section" id="configSection" style="display:none;">
+    <div class="config-title">🔧 系統設定</div>
+    <label style="font-size:0.82rem;color:#666;font-weight:700;">Google Apps Script 網址</label>
+    <input class="config-input" id="configGasUrl" type="text" placeholder="https://script.google.com/macros/s/YOUR_ID/exec">
+    <label style="font-size:0.82rem;color:#666;font-weight:700;margin-top:10px;display:block;">Anthropic API Key（AI 記憶故事）</label>
+    <input class="config-input" id="configApiKey" type="password" placeholder="sk-ant-...">
+    <div style="margin-top:8px;font-size:0.78rem;color:#aaa;">
+      💡 API Key 只存在瀏覽器，不會傳送至其他地方。未填寫時使用預設記憶提示。
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Screen 2: 記憶學習                                           -->
+<!-- ============================================================ -->
+<div id="screen-learn" class="screen">
+  <div style="width:100%;max-width:560px;">
+    <div class="quiz-meta" style="margin-bottom:8px;">
+      <span>🧠 記憶學習</span>
+      <span class="learn-counter" id="learnCounter">1 / 20</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="learnProgress" style="width:5%;"></div>
+    </div>
+  </div>
+
+  <!-- 翻轉卡片 -->
+  <div class="flip-card" id="flipCard" onclick="flipTheCard()">
+    <div class="flip-inner" id="flipInner">
+      <!-- 正面 -->
+      <div class="flip-face flip-front">
+        <div style="position:absolute;top:14px;right:16px;">
+          <button class="tts-btn" id="ttsBtnFront" onclick="speakIdiom(event)" style="font-size:0.9rem;padding:8px 16px;">
+            🔊 朗讀
+          </button>
+        </div>
+        <div class="emoji-art" id="learnEmoji">📖</div>
+        <div class="idiom-big" id="learnIdiom">一石二鳥</div>
+        <div class="phonetic" id="learnPhonetic">ㄧ ㄕˊ ㄦˋ ㄋㄧㄠˇ</div>
+        <div class="flip-hint">👆 點擊卡片翻到背面看解釋</div>
+      </div>
+      <!-- 背面 -->
+      <div class="flip-face flip-back" style="overflow-y:auto;">
+        <div style="width:100%;">
+          <div style="text-align:center;margin-bottom:12px;">
+            <button class="tts-btn" id="ttsBtnBack" onclick="speakMeaning(event)" style="font-size:0.9rem;padding:8px 16px;">
+              🔊 聽解釋
+            </button>
+          </div>
+          <div class="meaning-box">
+            <div class="meaning-label">📖 成語解釋</div>
+            <div class="meaning-text" id="learnMeaning">做一件事而能得到兩種利益。</div>
+          </div>
+          <div class="memory-box">
+            <div class="memory-label">🧠 超強記憶故事</div>
+            <div class="memory-text" id="learnMemory">
+              <span class="memory-loading">✨ 正在生成記憶故事…</span>
+            </div>
+          </div>
+          <div class="flip-hint">👆 點擊翻回正面</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 導覽 -->
+  <div class="card-nav">
+    <button class="btn btn-blue btn-sm" onclick="prevLearnCard()">◀ 上一個</button>
+    <div style="text-align:center;">
+      <div class="card-dots" id="cardDots"></div>
+    </div>
+    <button class="btn btn-blue btn-sm" onclick="nextLearnCard()">下一個 ▶</button>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%;max-width:560px;">
+    <button class="btn btn-teal" onclick="goToQuiz()" style="flex:1;min-width:180px;">
+      ✅ 學完了！開始測驗
+    </button>
+    <button class="btn btn-yellow btn-sm" onclick="goLogin()">🏠 回首頁</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Screen 3: 測驗                                               -->
+<!-- ============================================================ -->
+<div id="screen-quiz" class="screen">
+  <div class="quiz-header">
+    <div class="quiz-meta">
+      <span>⚔️ 闖關測驗</span>
+      <span id="quizCounter">第 1 / 20 題</span>
+    </div>
+    <div style="margin:8px 0;">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="quizProgress" style="width:5%;"></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="timer-wrap">
+        <span>⏱️</span>
+        <div class="timer-display" id="timerDisplay">00:00</div>
+      </div>
+      <div style="color:#fff;font-weight:700;font-size:1.1rem;">
+        🏅 <span id="currentScore">0</span> 分
+      </div>
+    </div>
+  </div>
+
+  <div class="card question-card" id="questionCard">
+    <div id="questionTypeBadge" class="question-type-badge" style="background:var(--blue);">選擇題</div>
+    <div class="question-text" id="questionText">請選出正確的解釋：</div>
+    <div id="questionDisplay"></div>
+    <div id="optionsContainer" style="margin-top:16px;"></div>
+  </div>
+
+  <button class="btn btn-blue btn-sm" onclick="goLogin()" style="opacity:0.7;">🏠 離開測驗</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- Screen 4: 成績報告                                           -->
+<!-- ============================================================ -->
+<div id="screen-results" class="screen">
+  <div class="confetti" id="confetti"></div>
+
+  <div class="result-title" id="resultTitle">🎉 太棒了！</div>
+  <div class="stars-row" id="starsRow"></div>
+
+  <div class="score-circle" id="scoreCircle">
+    <div class="score-number" id="finalScore">20</div>
+    <div class="score-total">/ 20 題正確</div>
+  </div>
+
+  <div class="result-stats">
+    <div class="stat-item">
+      <div class="stat-value" id="statTime">00:00</div>
+      <div class="stat-label">⏱️ 作答時間</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="statAccuracy">100%</div>
+      <div class="stat-label">🎯 正確率</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="statPoints">200</div>
+      <div class="stat-label">⭐ 獲得分數</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="statRank">冒險王</div>
+      <div class="stat-label">🏆 稱號</div>
+    </div>
+  </div>
+
+  <!-- 答錯的成語 -->
+  <div class="wrong-list" id="wrongList" style="display:none;">
+    <div class="wrong-title">📌 需要複習的成語：</div>
+    <div id="wrongItems"></div>
+  </div>
+
+  <div class="result-actions">
+    <button class="btn btn-coral" onclick="submitAndRestart()">📤 送出成績 & 再玩一次</button>
+    <button class="btn btn-teal" onclick="reviewWrong()" id="reviewBtn" style="display:none;">🔄 複習錯誤成語</button>
+    <button class="btn btn-yellow btn-sm" onclick="goLogin()">🏠 首頁</button>
+  </div>
+  <div id="submitStatus" style="color:rgba(255,255,255,0.8);font-size:0.85rem;margin-top:4px;"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- JavaScript                                                    -->
+<!-- ============================================================ -->
+<script>
+/* ─── 設定 ─── */
+const CONFIG = {
+  GAS_URL: '',          // 填入你的 GAS Web App URL
+  API_KEY: '',          // Anthropic API Key（可選）
+  QUESTIONS: 20,
+};
+
+/* ─── 預設題庫（當 GAS 未設定時使用）─── */
+const DEFAULT_IDIOMS = [
+  {id:1,  idiom:'一石二鳥', phonetic:'ㄧ ㄕˊ ㄦˋ ㄋㄧㄠˇ', meaning:'比喻做一件事，能同時得到兩種利益。'},
+  {id:2,  idiom:'半途而廢', phonetic:'ㄅㄢˋ ㄊㄨˊ ㄦˊ ㄈㄟˋ', meaning:'做事不能堅持到底，中途放棄。'},
+  {id:3,  idiom:'守株待兔', phonetic:'ㄕㄡˇ ㄓㄨ ㄉㄞˋ ㄊㄨˋ', meaning:'比喻不主動努力，坐等好運從天降的愚蠢行為。'},
+  {id:4,  idiom:'畫蛇添足', phonetic:'ㄏㄨㄚˋ ㄕㄜˊ ㄊㄧㄢ ㄗㄨˊ', meaning:'比喻多此一舉，做了多餘的事反而弄巧成拙。'},
+  {id:5,  idiom:'亡羊補牢', phonetic:'ㄨㄤˊ ㄧㄤˊ ㄅㄨˇ ㄌㄠˊ', meaning:'比喻出了差錯之後補救，免得再受損失。'},
+  {id:6,  idiom:'狐假虎威', phonetic:'ㄏㄨˊ ㄐㄧㄚˇ ㄏㄨˇ ㄨㄟ', meaning:'比喻倚仗別人的威勢欺壓人。'},
+  {id:7,  idiom:'掩耳盜鈴', phonetic:'ㄧㄢˇ ㄦˇ ㄉㄠˋ ㄌㄧㄥˊ', meaning:'比喻自欺欺人，以為自己不知道就等於別人不知道。'},
+  {id:8,  idiom:'葉公好龍', phonetic:'ㄧㄝˋ ㄍㄨㄥ ㄏㄠˋ ㄌㄨㄥˊ', meaning:'比喻表面喜歡某事物，其實並不真正愛好。'},
+  {id:9,  idiom:'刻舟求劍', phonetic:'ㄎㄜˋ ㄓㄡ ㄑㄧㄡˊ ㄐㄧㄢˋ', meaning:'比喻固執己見，不知道事物已經改變。'},
+  {id:10, idiom:'塞翁失馬', phonetic:'ㄙㄞˋ ㄨㄥ ㄕ ㄇㄚˇ', meaning:'比喻禍福相倚，壞事有時也會變成好事。'},
+  {id:11, idiom:'打草驚蛇', phonetic:'ㄉㄚˇ ㄘㄠˇ ㄐㄧㄥ ㄕㄜˊ', meaning:'比喻做事不謹慎，洩露消息使對方有所警覺。'},
+  {id:12, idiom:'杯弓蛇影', phonetic:'ㄅㄟ ㄍㄨㄥ ㄕㄜˊ ㄧㄥˇ', meaning:'比喻因疑神疑鬼而引起不必要的恐懼。'},
+  {id:13, idiom:'對牛彈琴', phonetic:'ㄉㄨㄟˋ ㄋㄧㄡˊ ㄊㄢˊ ㄑㄧㄣˊ', meaning:'比喻說話或做事不看對象，白費心思。'},
+  {id:14, idiom:'鶴立雞群', phonetic:'ㄏㄜˋ ㄌㄧˋ ㄐㄧ ㄑㄩㄣˊ', meaning:'比喻才能出眾，儀表超越一般人。'},
+  {id:15, idiom:'馬到成功', phonetic:'ㄇㄚˇ ㄉㄠˋ ㄔㄥˊ ㄍㄨㄥ', meaning:'形容事情順利，一開始就取得成功。'},
+  {id:16, idiom:'臥薪嘗膽', phonetic:'ㄨㄛˋ ㄒㄧㄣ ㄔㄤˊ ㄉㄢˇ', meaning:'形容刻苦自勵，立志復仇雪恥的精神。'},
+  {id:17, idiom:'破釜沉舟', phonetic:'ㄆㄛˋ ㄈㄨˇ ㄔㄣˊ ㄓㄡ', meaning:'比喻做事下定決心，不留後路、義無反顧。'},
+  {id:18, idiom:'程門立雪', phonetic:'ㄔㄥˊ ㄇㄣˊ ㄌㄧˋ ㄒㄩㄝˇ', meaning:'比喻尊師重道、誠心求學的精神。'},
+  {id:19, idiom:'鑿壁偷光', phonetic:'ㄗㄠˋ ㄅㄧˋ ㄊㄡ ㄍㄨㄤ', meaning:'形容家境貧寒，卻勤奮讀書的精神。'},
+  {id:20, idiom:'囊螢映雪', phonetic:'ㄋㄤˊ ㄧㄥˊ ㄧㄥˋ ㄒㄩㄝˇ', meaning:'形容家境清苦，但勤學不懈的精神。'},
+  {id:21, idiom:'懸梁刺股', phonetic:'ㄒㄩㄢˊ ㄌㄧㄤˊ ㄘˋ ㄍㄨˇ', meaning:'形容人刻苦讀書，勤奮努力不懈怠。'},
+  {id:22, idiom:'水滴石穿', phonetic:'ㄕㄨㄟˇ ㄉㄧ ㄕˊ ㄔㄨㄢ', meaning:'比喻只要有恆心、持之以恆，終究能成功。'},
+  {id:23, idiom:'熟能生巧', phonetic:'ㄕㄨˊ ㄋㄥˊ ㄕㄥ ㄑㄧㄠˇ', meaning:'做事情熟練了，自然能找到竅門。'},
+  {id:24, idiom:'勤能補拙', phonetic:'ㄑㄧㄣˊ ㄋㄥˊ ㄅㄨˇ ㄓㄨㄛ', meaning:'勤奮努力可以彌補天資不足的缺憾。'},
+  {id:25, idiom:'知足常樂', phonetic:'ㄓ ㄗㄨˊ ㄔㄤˊ ㄌㄜˋ', meaning:'知道滿足的人，常常感到快樂。'},
+];
+
+/* ─── Emoji 映射（根據關鍵詞）─── */
+const EMOJI_MAP = [
+  ['鳥','🐦'], ['蛇','🐍'], ['兔','🐰'], ['馬','🐴'], ['虎','🐯'],
+  ['龍','🐉'], ['牛','🐮'], ['羊','🐑'], ['狐','🦊'], ['鶴','🦢'],
+  ['水','💧'], ['火','🔥'], ['劍','⚔️'], ['書','📚'], ['雪','❄️'],
+  ['螢','✨'], ['光','💡'], ['金','💰'], ['石','🪨'], ['竹','🎋'],
+  ['記憶','🧠'], ['讀書','📖'], ['努力','💪'], ['成功','🏆'], ['快樂','😊'],
+];
+function getEmoji(meaning) {
+  for (const [kw, em] of EMOJI_MAP) {
+    if (meaning.includes(kw)) return em;
+  }
+  return ['📚','💫','🌟','🎯','🌈','✨','🎪'][Math.floor(Math.random()*7)];
+}
+
+/* ─── 記憶故事模板（當無 API Key 時）─── */
+const MEMORY_TEMPLATES = {
+  '一石二鳥': '🪨 小石頭像超人！丟一顆，「碰！」打中一隻鳥，石頭彈起來，「嘣！」又打到另一隻！一顆石頭，兩隻鳥倒地——這就是一石二鳥！下次做事，想想能不能一次得到兩個好處？',
+  '半途而廢': '🏃 小明報名跑馬拉松，跑到一半突然停下來說：「好累喔，回家吃飯！」結果什麼獎牌都沒拿到。不管做什麼事，要堅持到底，不能「半路廢掉」喔！',
+  '守株待兔': '🌳 農夫看到兔子撞樹倒下，超開心！從此每天坐在樹旁等，農田沒人耕，等到太陽都曬黑了，兔子再也沒來！靠運氣坐等，是最蠢的事。',
+  '畫蛇添足': '🐍 比賽畫蛇，老王第一個畫完！但他多加了四條腿：「我的蛇有腳更厲害！」結果裁判說：「蛇哪有腳！你輸了！」多此一舉反而壞事！',
+  '亡羊補牢': '🐑 鄰居說：「你的羊圈破了洞！」老農說：「等明天修。」第二天羊跑光了，才趕快修好圍欄。「亡羊」就是羊跑了，「補牢」就是修羊圈——出了問題要馬上補救！',
+};
+
+function getDefaultMemory(idiom, meaning) {
+  if (MEMORY_TEMPLATES[idiom]) return MEMORY_TEMPLATES[idiom];
+  // 通用模板
+  const chars = idiom.split('');
+  return `🎭 想像這個畫面：${meaning}\n\n🔑 記憶秘訣：「${chars[0]}」+「${chars[1]}」+「${chars[2]}」+「${chars[3]}」——把四個字串成一個故事畫面，在腦海中播放三次，就能記住了！`;
+}
+
+/* ─── 遊戲狀態 ─── */
+let STATE = {
+  name: '', className: '',
+  idioms: [],      // 本局20題成語
+  memStories: {},  // 記憶故事快取
+  learnIdx: 0,     // 學習卡片索引
+  isFlipped: false,
+  questions: [],   // 測驗題目陣列
+  qIdx: 0,         // 當前測驗題索引
+  score: 0,
+  correctCount: 0,
+  startTime: null,
+  wrongList: [],   // 答錯的成語
+  timerInterval: null,
+  canAnswer: true,
+};
+
+/* ─── 初始化星星背景 ─── */
+(function initStars() {
+  const bg = document.getElementById('starBg');
+  const items = ['⭐','🌟','✨','💫','🔸','🔹'];
+  for (let i = 0; i < 18; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.textContent = items[i % items.length];
+    s.style.left = Math.random()*100 + '%';
+    s.style.animationDuration = (8 + Math.random()*12) + 's';
+    s.style.animationDelay = (Math.random()*10) + 's';
+    s.style.fontSize = (0.8 + Math.random()*1.2) + 'rem';
+    bg.appendChild(s);
+  }
+})();
+
+/* ─── 工具函式 ─── */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showToast(msg, duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function toggleConfig() {
+  const s = document.getElementById('configSection');
+  s.style.display = s.style.display === 'none' ? 'block' : 'none';
+}
+
+function playSound(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    if (type === 'correct') {
+      o.frequency.setValueAtTime(523, ctx.currentTime);
+      o.frequency.setValueAtTime(659, ctx.currentTime+0.1);
+      o.frequency.setValueAtTime(784, ctx.currentTime+0.2);
+      g.gain.setValueAtTime(0.3, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.5);
+      o.start(); o.stop(ctx.currentTime+0.5);
+    } else if (type === 'wrong') {
+      o.frequency.setValueAtTime(330, ctx.currentTime);
+      o.frequency.setValueAtTime(220, ctx.currentTime+0.1);
+      g.gain.setValueAtTime(0.25, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.4);
+      o.start(); o.stop(ctx.currentTime+0.4);
+    } else if (type === 'complete') {
+      [523,659,784,1047].forEach((f,i) => {
+        const o2 = ctx.createOscillator();
+        const g2 = ctx.createGain();
+        o2.connect(g2); g2.connect(ctx.destination);
+        o2.frequency.value = f;
+        g2.gain.setValueAtTime(0.2, ctx.currentTime+i*0.12);
+        g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+i*0.12+0.4);
+        o2.start(ctx.currentTime+i*0.12);
+        o2.stop(ctx.currentTime+i*0.12+0.4);
+      });
+    }
+  } catch(e) {}
+}
+
+function speak(text, lang='zh-TW') {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang; u.rate = 0.85; u.pitch = 1.1;
+  speechSynthesis.speak(u);
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i=a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+/* ─── Screen 1: 開始遊戲 ─── */
+async function startGame() {
+  const name = document.getElementById('inputName').value.trim();
+  const cls  = document.getElementById('inputClass').value.trim();
+  if (!name) { showToast('❗ 請先輸入你的名字！'); return; }
+
+  // 儲存設定
+  CONFIG.GAS_URL = document.getElementById('configGasUrl').value.trim();
+  CONFIG.API_KEY = document.getElementById('configApiKey').value.trim();
+
+  STATE.name = name;
+  STATE.className = cls;
+  STATE.wrongList = [];
+  STATE.score = 0;
+  STATE.correctCount = 0;
+
+  showToast('⏳ 正在載入成語題庫…');
+
+  // 載入題庫
+  let idioms = [];
+  if (CONFIG.GAS_URL) {
+    try {
+      const res = await fetch(`${CONFIG.GAS_URL}?action=getIdioms&count=${CONFIG.QUESTIONS}`);
+      const data = await res.json();
+      if (data.success && data.idioms) idioms = data.idioms;
+    } catch(e) { console.warn('GAS 載入失敗，使用預設題庫'); }
+  }
+  if (idioms.length < CONFIG.QUESTIONS) {
+    idioms = shuffleArray(DEFAULT_IDIOMS).slice(0, CONFIG.QUESTIONS);
+  }
+
+  STATE.idioms = idioms;
+  STATE.memStories = {};
+  STATE.learnIdx = 0;
+  STATE.isFlipped = false;
+
+  showScreen('screen-learn');
+  renderLearnCard(0);
+  buildDots();
+}
+
+/* ─── Screen 2: 記憶學習 ─── */
+function buildDots() {
+  const container = document.getElementById('cardDots');
+  container.innerHTML = '';
+  STATE.idioms.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0 ? ' active' : '');
+    d.id = `dot_${i}`;
+    container.appendChild(d);
+  });
+}
+
+function renderLearnCard(idx) {
+  const idiom = STATE.idioms[idx];
+  if (!idiom) return;
+
+  // 更新正面
+  document.getElementById('learnIdiom').textContent = idiom.idiom;
+  document.getElementById('learnPhonetic').textContent = idiom.phonetic || '';
+  document.getElementById('learnEmoji').textContent = getEmoji(idiom.meaning);
+
+  // 重置翻轉
+  STATE.isFlipped = false;
+  document.getElementById('flipCard').classList.remove('flipped');
+
+  // 更新背面
+  document.getElementById('learnMeaning').textContent = idiom.meaning;
+  document.getElementById('learnMemory').innerHTML = '<span class="memory-loading">✨ 正在生成記憶故事…</span>';
+
+  // 進度
+  const pct = Math.round(((idx+1)/STATE.idioms.length)*100);
+  document.getElementById('learnProgress').style.width = pct + '%';
+  document.getElementById('learnCounter').textContent = `${idx+1} / ${STATE.idioms.length}`;
+
+  // 更新點點
+  document.querySelectorAll('.dot').forEach((d,i) => {
+    d.className = 'dot' + (i===idx ? ' active' : (i<idx ? ' done' : ''));
+  });
+
+  // 非同步生成記憶故事
+  generateMemoryStory(idiom, idx);
+}
+
+async function generateMemoryStory(idiom, idx) {
+  // 如有快取直接使用
+  if (STATE.memStories[idiom.idiom]) {
+    document.getElementById('learnMemory').innerHTML = STATE.memStories[idiom.idiom];
+    return;
+  }
+
+  // 嘗試 Anthropic API
+  if (CONFIG.API_KEY) {
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': CONFIG.API_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 250,
+          messages: [{
+            role: 'user',
+            content: `你是一位超有趣的國小老師。請為成語「${idiom.idiom}」（解釋：${idiom.meaning}）創作一個簡短有趣的記憶故事（3-4句），適合10-11歲小朋友，用誇張有趣的畫面幫助記憶，加上1-2個相關emoji，最後用一句話說明記憶秘訣。不要說「好的」或其他前言，直接說故事。`
+          }]
+        })
+      });
+      const data = await res.json();
+      const story = data.content?.[0]?.text || '';
+      if (story) {
+        STATE.memStories[idiom.idiom] = story;
+        // 只在當前卡片顯示
+        if (STATE.learnIdx === idx) {
+          document.getElementById('learnMemory').textContent = story;
+        }
+        return;
+      }
+    } catch(e) { console.warn('AI API 失敗，使用預設故事'); }
+  }
+
+  // 使用預設故事
+  const story = getDefaultMemory(idiom.idiom, idiom.meaning);
+  STATE.memStories[idiom.idiom] = story;
+  if (STATE.learnIdx === idx) {
+    document.getElementById('learnMemory').textContent = story;
+  }
+}
+
+function flipTheCard() {
+  STATE.isFlipped = !STATE.isFlipped;
+  document.getElementById('flipCard').classList.toggle('flipped', STATE.isFlipped);
+}
+
+function speakIdiom(e) {
+  e.stopPropagation();
+  const idiom = STATE.idioms[STATE.learnIdx];
+  speak(idiom.idiom + '，' + (idiom.phonetic||''));
+  showToast('🔊 ' + idiom.idiom);
+}
+
+function speakMeaning(e) {
+  e.stopPropagation();
+  const idiom = STATE.idioms[STATE.learnIdx];
+  speak(idiom.idiom + '。' + idiom.meaning);
+}
+
+function prevLearnCard() {
+  if (STATE.learnIdx > 0) { STATE.learnIdx--; renderLearnCard(STATE.learnIdx); }
+}
+function nextLearnCard() {
+  if (STATE.learnIdx < STATE.idioms.length-1) { STATE.learnIdx++; renderLearnCard(STATE.learnIdx); }
+  else showToast('🎉 已看完全部成語！可以開始測驗了！');
+}
+
+/* ─── Screen 3: 測驗 ─── */
+function goToQuiz() {
+  STATE.questions = buildQuestions();
+  STATE.qIdx = 0;
+  STATE.score = 0;
+  STATE.correctCount = 0;
+  STATE.wrongList = [];
+  STATE.startTime = Date.now();
+  STATE.canAnswer = true;
+
+  showScreen('screen-quiz');
+  startTimer();
+  renderQuestion();
+}
+
+/* 產生測驗題目（三種類型交替） */
+function buildQuestions() {
+  const questions = [];
+  const idioms = STATE.idioms;
+  const types = ['idiomToMeaning', 'meaningToIdiom', 'fillBlank'];
+  idioms.forEach((item, i) => {
+    const type = types[i % 3];
+    const wrongs = shuffleArray(idioms.filter(x => x.idiom !== item.idiom)).slice(0,3);
+    questions.push({ type, target: item, wrongs });
+  });
+  return shuffleArray(questions);
+}
+
+function startTimer() {
+  clearInterval(STATE.timerInterval);
+  STATE.timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - STATE.startTime)/1000);
+    const m = String(Math.floor(elapsed/60)).padStart(2,'0');
+    const s = String(elapsed%60).padStart(2,'0');
+    const display = document.getElementById('timerDisplay');
+    display.textContent = `${m}:${s}`;
+    display.classList.toggle('warn', elapsed > 300);
+  }, 1000);
+}
+
+function renderQuestion() {
+  if (STATE.qIdx >= STATE.questions.length) { endQuiz(); return; }
+
+  const q = STATE.questions[STATE.qIdx];
+  const pct = Math.round(((STATE.qIdx+1)/STATE.questions.length)*100);
+  document.getElementById('quizProgress').style.width = pct + '%';
+  document.getElementById('quizCounter').textContent = `第 ${STATE.qIdx+1} / ${STATE.questions.length} 題`;
+  document.getElementById('currentScore').textContent = STATE.score;
+  STATE.canAnswer = true;
+
+  const badge = document.getElementById('questionTypeBadge');
+  const display = document.getElementById('questionDisplay');
+  const options = document.getElementById('optionsContainer');
+
+  if (q.type === 'idiomToMeaning') {
+    badge.textContent = '📖 看成語，選解釋';
+    badge.style.background = 'linear-gradient(135deg,#4D96FF,#00D2FF)';
+    document.getElementById('questionText').textContent = '請選出這個成語正確的解釋：';
+    display.innerHTML = `<div class="question-idiom">${q.target.idiom}</div>
+      <div style="text-align:center;margin-bottom:4px;">
+        <button class="tts-btn" onclick="speak('${q.target.idiom}')" style="font-size:0.85rem;padding:7px 16px;">🔊</button>
+      </div>`;
+    const opts = shuffleArray([
+      { text: q.target.meaning, correct: true },
+      ...q.wrongs.map(w => ({ text: w.meaning, correct: false }))
+    ]);
+    options.innerHTML = '';
+    const grid = document.createElement('div');
+    grid.className = 'options-grid';
+    opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = opt.text;
+      btn.onclick = () => handleAnswer(btn, opt.correct, q);
+      grid.appendChild(btn);
+    });
+    options.appendChild(grid);
+
+  } else if (q.type === 'meaningToIdiom') {
+    badge.textContent = '🔍 看解釋，選成語';
+    badge.style.background = 'linear-gradient(135deg,#C77DFF,#FF6BB5)';
+    document.getElementById('questionText').textContent = '哪個成語符合下面的意思？';
+    display.innerHTML = `<div class="question-meaning">${q.target.meaning}</div>`;
+    const opts = shuffleArray([
+      { text: q.target.idiom, correct: true },
+      ...q.wrongs.map(w => ({ text: w.idiom, correct: false }))
+    ]);
+    options.innerHTML = '';
+    const grid = document.createElement('div');
+    grid.className = 'options-grid';
+    opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.style.fontSize = '1.6rem';
+      btn.style.letterSpacing = '0.1em';
+      btn.textContent = opt.text;
+      btn.onclick = () => handleAnswer(btn, opt.correct, q);
+      grid.appendChild(btn);
+    });
+    options.appendChild(grid);
+
+  } else { // fillBlank
+    badge.textContent = '✏️ 成語填空';
+    badge.style.background = 'linear-gradient(135deg,#FF9A3C,#FF6B6B)';
+    const blankIdx = Math.floor(Math.random() * q.target.idiom.length);
+    const chars = q.target.idiom.split('');
+    const correctChar = chars[blankIdx];
+    document.getElementById('questionText').textContent = '這個成語少了哪個字？選出正確答案：';
+
+    let blankedHTML = chars.map((c,i) =>
+      i === blankIdx ? `<span class="blank-char">　</span>` : `<span>${c}</span>`
+    ).join('');
+    display.innerHTML = `<div class="idiom-blanked">${blankedHTML}</div>
+      <div style="text-align:center;color:#888;font-size:0.85rem;margin-bottom:8px;">${q.target.meaning}</div>`;
+
+    // 錯誤選項：從其他成語中隨機挑同位置的字（避免重複）
+    const wrongChars = [];
+    const pool = STATE.idioms.filter(x => x.idiom !== q.target.idiom);
+    for (const p of shuffleArray(pool)) {
+      const c = p.idiom[blankIdx];
+      if (c && !wrongChars.includes(c) && c !== correctChar) {
+        wrongChars.push(c);
+        if (wrongChars.length >= 3) break;
+      }
+    }
+    while (wrongChars.length < 3) {
+      const extra = '心水木火土金石日月山'[wrongChars.length];
+      if (!wrongChars.includes(extra) && extra !== correctChar) wrongChars.push(extra);
+    }
+    const fillOpts = shuffleArray([
+      { char: correctChar, correct: true },
+      ...wrongChars.map(c => ({ char: c, correct: false }))
+    ]);
+    options.innerHTML = '';
+    const fillGrid = document.createElement('div');
+    fillGrid.className = 'fill-grid';
+    fillOpts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'fill-option';
+      btn.textContent = opt.char;
+      btn.onclick = () => handleFillAnswer(btn, opt.correct, q, blankIdx);
+      fillGrid.appendChild(btn);
+    });
+    options.appendChild(fillGrid);
+  }
+}
+
+function handleAnswer(btn, isCorrect, q) {
+  if (!STATE.canAnswer) return;
+  STATE.canAnswer = false;
+  disableAllOptions();
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    STATE.score += 10;
+    STATE.correctCount++;
+    playSound('correct');
+    showFeedback('🎉');
+  } else {
+    btn.classList.add('wrong');
+    STATE.wrongList.push(q.target);
+    playSound('wrong');
+    showFeedback('😢');
+    // 標示正確答案
+    document.querySelectorAll('.option-btn').forEach(b => {
+      if (b.textContent === q.target.meaning || b.textContent === q.target.idiom) {
+        b.classList.add('correct');
+      }
+    });
+  }
+
+  setTimeout(() => { STATE.qIdx++; renderQuestion(); }, 1500);
+}
+
+function handleFillAnswer(btn, isCorrect, q, blankIdx) {
+  if (!STATE.canAnswer) return;
+  STATE.canAnswer = false;
+  document.querySelectorAll('.fill-option').forEach(b => {
+    b.onclick = null; b.style.cursor = 'default';
+  });
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    // 填入正確字
+    document.querySelectorAll('.blank-char').forEach(s => s.textContent = q.target.idiom[blankIdx]);
+    STATE.score += 10; STATE.correctCount++;
+    playSound('correct'); showFeedback('🎉');
+  } else {
+    btn.classList.add('wrong');
+    STATE.wrongList.push(q.target);
+    // 顯示正確答案
+    document.querySelectorAll('.fill-option').forEach(b => {
+      if (b.textContent === q.target.idiom[blankIdx]) b.classList.add('correct');
+    });
+    playSound('wrong'); showFeedback('😢');
+  }
+
+  setTimeout(() => { STATE.qIdx++; renderQuestion(); }, 1600);
+}
+
+function disableAllOptions() {
+  document.querySelectorAll('.option-btn').forEach(b => {
+    b.classList.add('disabled'); b.onclick = null;
+  });
+}
+
+function showFeedback(emoji) {
+  const existing = document.querySelector('.feedback-overlay');
+  if (existing) existing.remove();
+  const div = document.createElement('div');
+  div.className = 'feedback-overlay';
+  div.innerHTML = `<div class="feedback-msg">${emoji}</div>`;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 700);
+}
+
+/* ─── Screen 4: 結果 ─── */
+function endQuiz() {
+  clearInterval(STATE.timerInterval);
+  playSound('complete');
+
+  const elapsed = Math.floor((Date.now() - STATE.startTime)/1000);
+  const m = String(Math.floor(elapsed/60)).padStart(2,'0');
+  const s = String(elapsed%60).padStart(2,'0');
+  const accuracy = Math.round((STATE.correctCount/STATE.questions.length)*100);
+  const stars = accuracy >= 90 ? 3 : accuracy >= 70 ? 2 : 1;
+
+  // 稱號
+  const ranks = ['繼續加油！💪','成語新手🌱','成語達人⭐','成語高手🔥','成語王者👑'];
+  const rankIdx = accuracy >= 95 ? 4 : accuracy >= 85 ? 3 : accuracy >= 70 ? 2 : accuracy >= 50 ? 1 : 0;
+
+  // 更新 UI
+  document.getElementById('resultTitle').textContent =
+    accuracy >= 90 ? '🎉 太厲害了！' : accuracy >= 70 ? '👏 做得很好！' : '💪 繼續加油！';
+  document.getElementById('finalScore').textContent = STATE.correctCount;
+  document.getElementById('statTime').textContent = `${m}:${s}`;
+  document.getElementById('statAccuracy').textContent = accuracy + '%';
+  document.getElementById('statPoints').textContent = STATE.score;
+  document.getElementById('statRank').textContent = ranks[rankIdx];
+
+  // 星星
+  const starsRow = document.getElementById('starsRow');
+  starsRow.innerHTML = '';
+  for (let i=0; i<3; i++) {
+    const sp = document.createElement('span');
+    sp.className = 'star-icon';
+    sp.textContent = i < stars ? '⭐' : '☆';
+    starsRow.appendChild(sp);
+  }
+
+  // 答錯清單
+  const uniqueWrong = [...new Map(STATE.wrongList.map(x=>[x.idiom,x])).values()];
+  if (uniqueWrong.length > 0) {
+    document.getElementById('wrongList').style.display = 'block';
+    document.getElementById('reviewBtn').style.display = 'inline-flex';
+    document.getElementById('wrongItems').innerHTML = uniqueWrong.map(w =>
+      `<div class="wrong-item">
+        <div class="wrong-idiom">${w.idiom}</div>
+        <div class="wrong-meaning">${w.meaning}</div>
+      </div>`
+    ).join('');
+  } else {
+    document.getElementById('wrongList').style.display = 'none';
+    document.getElementById('reviewBtn').style.display = 'none';
+  }
+
+  showScreen('screen-results');
+  if (stars >= 2) launchConfetti();
+  document.getElementById('submitStatus').textContent = '';
+}
+
+function launchConfetti() {
+  const c = document.getElementById('confetti');
+  c.innerHTML = '';
+  const colors = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#C77DFF','#FF9A3C'];
+  for (let i=0; i<60; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random()*100 + '%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.width = (8+Math.random()*10) + 'px';
+    p.style.height = (12+Math.random()*16) + 'px';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '3px';
+    p.style.animationDuration = (1.5+Math.random()*2) + 's';
+    p.style.animationDelay = (Math.random()*1.5) + 's';
+    c.appendChild(p);
+  }
+  setTimeout(() => c.innerHTML = '', 5000);
+}
+
+async function submitAndRestart() {
+  const status = document.getElementById('submitStatus');
+  const elapsed = Math.floor((Date.now() - STATE.startTime)/1000);
+
+  // 送出至 GAS
+  if (CONFIG.GAS_URL) {
+    status.textContent = '📤 正在送出成績…';
+    try {
+      await fetch(CONFIG.GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'recordScore',
+          name: STATE.name,
+          className: STATE.className,
+          correctCount: STATE.correctCount,
+          totalCount: STATE.questions.length,
+          score: STATE.score,
+          timeSeconds: elapsed,
+          accuracy: Math.round((STATE.correctCount/STATE.questions.length)*100),
+          idioms: STATE.idioms.map(x=>x.idiom),
+          wrongIdioms: [...new Set(STATE.wrongList.map(x=>x.idiom))],
+          date: new Date().toLocaleString('zh-TW')
+        })
+      });
+      status.textContent = '✅ 成績已記錄！';
+    } catch(e) {
+      status.textContent = '⚠️ 記錄失敗，請確認 GAS 設定。';
+    }
+  } else {
+    status.textContent = '💡 未設定 GAS URL，成績未記錄。';
+  }
+
+  setTimeout(() => startGame(), 1800);
+}
+
+function reviewWrong() {
+  // 將錯誤成語設為本局，再玩一次
+  const unique = [...new Map(STATE.wrongList.map(x=>[x.idiom,x])).values()];
+  if (unique.length === 0) return;
+  STATE.idioms = unique;
+  STATE.learnIdx = 0;
+  STATE.isFlipped = false;
+  showScreen('screen-learn');
+  renderLearnCard(0);
+  buildDots();
+  showToast('🔄 複習模式：針對答錯的成語再練習！');
+}
+
+function goLogin() {
+  clearInterval(STATE.timerInterval);
+  speechSynthesis.cancel();
+  showScreen('screen-login');
+}
+</script>
+</body>
+</html>
