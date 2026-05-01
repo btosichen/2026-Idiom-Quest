@@ -6866,14 +6866,13 @@ async function submitAndRestart() {
   const status = document.getElementById('submitStatus');
   const elapsed = Math.floor((Date.now() - STATE.startTime)/1000);
 
-  // 送出至 GAS
   if (CONFIG.GAS_URL) {
     status.textContent = '📤 正在送出成績…';
     try {
       await fetch(CONFIG.GAS_URL, {
         method: 'POST',
         mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },  // ← 這裡改掉
         body: JSON.stringify({
           action: 'recordScore',
           name: STATE.name,
@@ -6892,8 +6891,6 @@ async function submitAndRestart() {
     } catch(e) {
       status.textContent = '⚠️ 記錄失敗，請確認 GAS 設定。';
     }
-  } else {
-    status.textContent = '💡 未設定 GAS URL，成績未記錄。';
   }
 
   setTimeout(() => startGame(), 1800);
